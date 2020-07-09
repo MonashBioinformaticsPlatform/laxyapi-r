@@ -1,0 +1,40 @@
+---
+title: "laxyapi"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{introduction}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Usage
+
+```{r setup}
+library(laxyapi)
+```
+
+Get all the files from a job, given a job ID and access_token:
+```{r eval=FALSE}
+JOB_ID <- "bl4F00longIDfr0MLAXY"
+ACCESS_TOKEN <- "51d97057-8b48-4457-a40d-72c6641fa539"
+
+all_job_files <- laxyapi::get_job_files(
+  JOB_ID,
+  access_token = ACCESS_TOKEN)
+```
+
+Download just the files in `*/sikRun/countFiles/*.txt`.
+These would be just the count files from an RNAsik run.
+```{r eval=FALSE}
+downloaded_count_files <- laxyapi::get_job_files(
+  JOB_ID,
+  glob_filter = "*/sikRun/countFiles/*.txt",
+  access_token = ACCESS_TOKEN)
+```
