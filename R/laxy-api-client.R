@@ -8,34 +8,66 @@ log_msg <- function(msg, verbose = TRUE) {
   }
 }
 
-get_resource <- function(resource_type, resource_id,
-                         access_token = NULL, laxy_api_url = "https://api.laxy.io") {
-  url <- glue::glue("{laxy_api_url}/api/v1/{resource_type}/{resource_id}/")
+get_resource <- function(resource_type, resource_id = NULL,
+                         access_token = NULL, jwt_auth_token = NULL, 
+                         laxy_api_url = "https://api.laxy.io", format='json') {
+  
+  if (!is.null(resource_id)) {
+    url <- glue::glue("{laxy_api_url}/api/v1/{resource_type}/{resource_id}/")
+  } else {
+    url <- glue::glue("{laxy_api_url}/api/v1/{resource_type}/")
+  }
+  
   if (!is.null(access_token)) {
     url <- glue::glue("{url}?access_token={access_token}")
   }
-  r <- httr::GET(url)
-  #if (httr::status_code(r) != 200) {
+
+  if (format == 'json') {
+    req <- httr::add_headers(Accept = glue::glue("application/json"))
+  }
+  
+  if (format == 'csv') {
+    req <- httr::add_headers(Accept = glue::glue("text/csv"))
+  }
+  
+  if (!is.null(jwt_auth_token)) {
+    req$headers["Authorization"] = glue::glue("Bearer {jwt_auth_token}")
+  }
+  
+  print(url)
+  print(req)
+  resp <- httr::GET(url, req)
+
+  #if (httr::status_code(resp) != 200) {
   #}
-  resource_json <- httr::content(r, "parsed")
-  return(resource_json)
+  
+  # Parsed JSON or CSV - httr can guess based on Content-Type
+  resource_data <- httr::content(resp, "parsed")
+  return(resource_data)
+}
+
+get_job_list <- function(jwt_auth_token = NULL, laxy_api_url = "https://api.laxy.io", format='csv') {
+  return(get_resource('jobs', jwt_auth_token = jwt_auth_token, laxy_api_url = laxy_api_url, format=format))
 }
 
 # Get the job details, grab the input and output fileset ids
-get_job <- function(job_id, access_token = NULL, laxy_api_url = "https://api.laxy.io") {
-  return(get_resource('job', job_id, access_token = access_token, laxy_api_url = laxy_api_url))
+get_job <- function(job_id, access_token = NULL,  jwt_auth_token = NULL, laxy_api_url = "https://api.laxy.io") {
+  return(get_resource('job', job_id, access_token = access_token, jwt_auth_token = jwt_auth_token, laxy_api_url = laxy_api_url))
 }
 
-get_fileset <- function(fileset_id, access_token = NULL, laxy_api_url = "https://api.laxy.io") {
-  return(get_resource('fileset', fileset_id, access_token = access_token, laxy_api_url = laxy_api_url))
+get_fileset <- function(fileset_id, access_token = NULL, jwt_auth_token = NULL, laxy_api_url = "https://api.laxy.io") {
+  return(get_resource('fileset', fileset_id, access_token = access_token, jwt_auth_token = jwt_auth_token, laxy_api_url = laxy_api_url))
 }
 
-get_laxy_file <- function(job_id, filepath, access_token = NULL, laxy_api_url = "https://api.laxy.io") {
+get_laxy_file <- function(job_id, filepath, access_token = NULL, jwt_auth_token = NULL, laxy_api_url = "https://api.laxy.io") {
   url <- glue::glue("{laxy_api_url}/api/v1/job/{job_id}/files/{filepath}")
   if (!is.null(access_token)) {
     url <- glue::glue("{url}?access_token={access_token}")
   }
-  r <- httr::GET(url, httr::write_disk(glue::glue("{job_id}/{filepath}"), overwrite = TRUE))
+  if (!is.null(jwt_auth_token)) {
+    headers <- add_header(Authorization = glue::glue("Bearer {jwt_auth_token}"))
+  }
+  r <- httr::GET(url, headers, httr::write_disk(glue::glue("{job_id}/{filepath}"), overwrite = TRUE))
   return(r)
 }
 
@@ -43,6 +75,7 @@ get_laxy_file <- function(job_id, filepath, access_token = NULL, laxy_api_url = 
 #'
 #' @param job_id the job ID
 #' @param access_token the secret access token
+#' @param jwt_auth_token a secret JWT authorization token (for Authorization: Bearer header)
 #' @param glob_filter a wildcard glob to select a subset of files, eg \code{"output/*/*.txt"}
 #' @param clobber_truncated overwrite any existing file that appears smaller than the remote copy
 #' @param skip_existing skip any files that already exist locally, don't overwrite
@@ -65,15 +98,15 @@ get_laxy_file <- function(job_id, filepath, access_token = NULL, laxy_api_url = 
 #'                  access_token = "51d97057-8b48-4457-a40d-72c6641fa539",
 #'                  laxy_api_url = "https://dev-api.laxy.io:8001")
 #'
-get_job_files <- function(job_id, access_token = NULL, glob_filter = "*",
-                          clobber_truncated = TRUE, skip_existing = TRUE,
+get_job_files <- function(job_id, access_token = NULL, jwt_auth_token = NULL, 
+                          glob_filter = "*", clobber_truncated = TRUE, skip_existing = TRUE,
                           max_size = NULL,
                           verbose = FALSE,
                           laxy_api_url = "https://api.laxy.io") {
 
-  job <- get_job(job_id, access_token = access_token, laxy_api_url = laxy_api_url)
-  input_fileset <- get_fileset(job$input_fileset_id, access_token = access_token, laxy_api_url = laxy_api_url)
-  output_fileset <- get_fileset(job$output_fileset_id, access_token = access_token, laxy_api_url = laxy_api_url)
+  job <- get_job(job_id, access_token = access_token, jwt_auth_token = jwt_auth_token, laxy_api_url = laxy_api_url)
+  input_fileset <- get_fileset(job$input_fileset_id, access_token = access_token, jwt_auth_token = jwt_auth_token, laxy_api_url = laxy_api_url)
+  output_fileset <- get_fileset(job$output_fileset_id, access_token = access_token, jwt_auth_token = jwt_auth_token, laxy_api_url = laxy_api_url)
 
   downloaded <- c()
   for (f in append(input_fileset$files, output_fileset$files)) {
