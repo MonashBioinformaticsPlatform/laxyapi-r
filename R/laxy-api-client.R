@@ -34,8 +34,6 @@ get_resource <- function(resource_type, resource_id = NULL,
     req$headers["Authorization"] = glue::glue("Bearer {jwt_auth_token}")
   }
   
-  print(url)
-  print(req)
   resp <- httr::GET(url, req)
 
   #if (httr::status_code(resp) != 200) {
