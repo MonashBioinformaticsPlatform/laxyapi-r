@@ -1,7 +1,7 @@
 Package: laxyapi
 Type: Package
 Title: Download Files From Laxy Via The REST API
-Version: 0.1.0
+Version: 0.1.1
 Author: Andrew Perry
 Maintainer: Andrew Perry <Andrew.Perry@monash.edu>
 Description: This package allows you to interact with the Laxy web service via it's RESTful API.
