@@ -8,6 +8,7 @@ log_msg <- function(msg, verbose = TRUE) {
   }
 }
 
+#' @export
 get_resource <- function(resource_type, resource_id = NULL,
                          access_token = NULL, jwt_auth_token = NULL, 
                          laxy_api_url = "https://api.laxy.io", format='json') {
@@ -44,19 +45,23 @@ get_resource <- function(resource_type, resource_id = NULL,
   return(resource_data)
 }
 
+#' @export
 get_job_list <- function(jwt_auth_token = NULL, laxy_api_url = "https://api.laxy.io", format='csv') {
   return(get_resource('jobs', jwt_auth_token = jwt_auth_token, laxy_api_url = laxy_api_url, format=format))
 }
 
 # Get the job details, grab the input and output fileset ids
+#' @export
 get_job <- function(job_id, access_token = NULL,  jwt_auth_token = NULL, laxy_api_url = "https://api.laxy.io") {
   return(get_resource('job', job_id, access_token = access_token, jwt_auth_token = jwt_auth_token, laxy_api_url = laxy_api_url))
 }
 
+#' @export
 get_fileset <- function(fileset_id, access_token = NULL, jwt_auth_token = NULL, laxy_api_url = "https://api.laxy.io") {
   return(get_resource('fileset', fileset_id, access_token = access_token, jwt_auth_token = jwt_auth_token, laxy_api_url = laxy_api_url))
 }
 
+#' @export
 get_laxy_file <- function(job_id, filepath, access_token = NULL, jwt_auth_token = NULL, laxy_api_url = "https://api.laxy.io") {
   url <- glue::glue("{laxy_api_url}/api/v1/job/{job_id}/files/{filepath}")
   if (!is.null(access_token)) {
