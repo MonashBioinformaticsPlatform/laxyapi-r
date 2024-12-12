@@ -3,7 +3,8 @@
 Interact with the Laxy API via R. Download job files.
 
 ```R
-devtools::install_github('MonashBioinformaticsPlatform/laxyapi-r')
+install.packages("remotes")
+remotes::install_github('MonashBioinformaticsPlatform/laxyapi-r')
 
 JOB_ID <- "bl4F00longIDfr0MLAXY"
 ACCESS_TOKEN <- "51d97057-8b48-4457-a40d-72c6641fa539"
