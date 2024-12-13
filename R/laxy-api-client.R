@@ -67,6 +67,7 @@ get_laxy_file <- function(job_id, filepath, access_token = NULL, jwt_auth_token 
   if (!is.null(access_token)) {
     url <- glue::glue("{url}?access_token={access_token}")
   }
+  headers <- NULL
   if (!is.null(jwt_auth_token)) {
     headers <- add_header(Authorization = glue::glue("Bearer {jwt_auth_token}"))
   }
